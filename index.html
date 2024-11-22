@@ -4,8 +4,50 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Neon Emulation Demo</title>
+    <script src="/mini-coi.js"></script>
+    <link rel="stylesheet" href="https://pyscript.net/releases/2024.10.2/core.css">
+    <script type="module" src="https://pyscript.net/releases/2024.10.2/core.js"></script>
 </head>
 <body>
-    
+    <canvas width="64" height="32" id="canvas" style="width: 200px; outline: solid; image-rendering: pixelated;"></canvas>
+
+    <script>
+        const canvas = document.getElementById("canvas");
+        const ctx = canvas.getContext("2d");
+
+        function js_text(text, x, y) {
+            ctx.fillStyle = "black"
+            ctx.font = "12px serif"
+            ctx.fillText(text, x, y);
+        }
+
+        function js_clear() {
+            ctx.reset();
+            ctx.imageSmoothingEnabled = false;
+            ctx.textRendering = "optimizeLegibility";
+        }
+    </script>
+
+    <script type="mpy-editor" env="shared" setup>
+        from pyscript import window
+
+        class Neon:
+            def put_text(text, x, y):
+                window.js_text(text, x, y)
+    </script>
+
+    <script type="mpy-editor" env="shared" id="main-editor">
+        Neon.put_text("test", 0, 16)
+    </script>
+
+    <script type="mpy">
+        from pyscript import document, window
+        
+        def handle_event(event):
+            window.js_clear()
+
+        foreign = document.getElementById("main-editor")
+        foreign.handleEvent = handle_event
+    </script>
 </body>
 </html>
