@@ -1,0 +1,8 @@
+@font-face {
+    font-family: pixel;
+    src: url("https://dl.dropboxusercontent.com/s/hsdwvz761xqphhb/pixel.ttf");
+}
+
+canvas {
+    filter: blur(0.3px);
+}

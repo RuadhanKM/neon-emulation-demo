@@ -6,6 +6,7 @@
     <title>Neon Emulation Demo</title>
     <script src="/mini-coi.js"></script>
     <link rel="stylesheet" href="https://pyscript.net/releases/2024.10.2/core.css">
+    <link rel="stylesheet" href="index.css">
     <script type="module" src="https://pyscript.net/releases/2024.10.2/core.js"></script>
 </head>
 <body>
@@ -20,7 +21,7 @@
 
         function js_text(text, x, y) {
             virtCtx.fillStyle = "white"
-            virtCtx.font = "12px serif"
+            virtCtx.font = "12px pixel"
             virtCtx.fillText(text, x, y);
 
             js_update();
@@ -36,7 +37,7 @@
         function js_clear() {
             virtCtx.reset();
             virtCtx.imageSmoothingEnabled = false;
-            virtCtx.textRendering = "optimizeLegibility";
+            virtCtx.textRendering = "geometricPrecision";
 
             js_update();
         }
@@ -46,13 +47,11 @@
             const inImageData = virtCtx.getImageData(0, 0, virtCanvas.width, virtCanvas.height).data;
             const ratio = canvas.width / virtCanvas.width;
 
-            console.log(inImageData);
-
             ctx.reset();
             ctx.imageSmoothingEnabled = false;
-            ctx.textRendering = "optimizeLegibility";
+            ctx.textRendering = "geometricPrecision";
 
-            ctx.fillStyle = "rgb(60 60 60)"
+            ctx.fillStyle = "rgb(15 15 15)"
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
             for (let y=0; y<virtCanvas.height; y++) {
@@ -65,13 +64,20 @@
                         inImageData[2 + colorIndex] * (inImageData[3 + colorIndex]/255)
                     ];
 
-                    if (inImageData[3 + colorIndex] != 0) { console.log(color); }
+                    const lightness = 0.2126*color[0] + 0.7152*color[1] + 0.0722*color[2];
+                    let pixelX = x*ratio + ratio/4;
+                    let pixelY = y*ratio + ratio/4;
 
                     ctx.fillStyle = `rgb(${color[0]} ${color[1]} ${color[2]})`;
-                    ctx.fillRect(x*ratio + 2.5, y*ratio + 2.5, 5, 5);
+                    ctx.shadowBlur = ratio/2 * lightness/255;
+                    ctx.shadowColor = ctx.fillStyle;
+
+                    ctx.fillRect(pixelX, pixelY, ratio/2, ratio/2);
                 }
             }
         }
+
+        js_update();
     </script>
 
     <script type="mpy-editor" env="shared" setup>
