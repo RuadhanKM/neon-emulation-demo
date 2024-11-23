@@ -9,22 +9,68 @@
     <script type="module" src="https://pyscript.net/releases/2024.10.2/core.js"></script>
 </head>
 <body>
-    <canvas width="64" height="32" id="canvas" style="width: 200px; outline: solid; image-rendering: pixelated;"></canvas>
+    <canvas width="640" height="320" id="canvas" style="width: 800px; outline: solid; image-rendering: pixelated;"></canvas>
 
     <script>
         const canvas = document.getElementById("canvas");
         const ctx = canvas.getContext("2d");
 
+        const virtCanvas = new OffscreenCanvas(64, 32);
+        const virtCtx = virtCanvas.getContext("2d");
+
         function js_text(text, x, y) {
-            ctx.fillStyle = "black"
-            ctx.font = "12px serif"
-            ctx.fillText(text, x, y);
+            virtCtx.fillStyle = "white"
+            virtCtx.font = "12px serif"
+            virtCtx.fillText(text, x, y);
+
+            js_update();
+        }
+
+        function js_pixel(color, x, y) {
+            virtCtx.fillStyle = color;
+            virtCtx.fillRect(x, y, 1, 1);
+
+            js_update();
         }
 
         function js_clear() {
+            virtCtx.reset();
+            virtCtx.imageSmoothingEnabled = false;
+            virtCtx.textRendering = "optimizeLegibility";
+
+            js_update();
+        }
+
+        function js_update() {
+            const outImageData = ctx.createImageData(canvas.width, canvas.height);
+            const inImageData = virtCtx.getImageData(0, 0, virtCanvas.width, virtCanvas.height).data;
+            const ratio = canvas.width / virtCanvas.width;
+
+            console.log(inImageData);
+
             ctx.reset();
             ctx.imageSmoothingEnabled = false;
             ctx.textRendering = "optimizeLegibility";
+
+            ctx.fillStyle = "rgb(60 60 60)"
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            for (let y=0; y<virtCanvas.height; y++) {
+                for (let x=0; x<virtCanvas.width; x++) {
+                    const colorIndex = (y*virtCanvas.width + x) * 4;
+
+                    const color = [
+                        inImageData[0 + colorIndex] * (inImageData[3 + colorIndex]/255), 
+                        inImageData[1 + colorIndex] * (inImageData[3 + colorIndex]/255), 
+                        inImageData[2 + colorIndex] * (inImageData[3 + colorIndex]/255)
+                    ];
+
+                    if (inImageData[3 + colorIndex] != 0) { console.log(color); }
+
+                    ctx.fillStyle = `rgb(${color[0]} ${color[1]} ${color[2]})`;
+                    ctx.fillRect(x*ratio + 2.5, y*ratio + 2.5, 5, 5);
+                }
+            }
         }
     </script>
 
@@ -32,12 +78,15 @@
         from pyscript import window
 
         class Neon:
-            def put_text(text, x, y):
+            def draw_text(text, x, y):
                 window.js_text(text, x, y)
+
+            def draw_pixel(color, x, y):
+                window.js_pixel(color, x, y)
     </script>
 
     <script type="mpy-editor" env="shared" id="main-editor">
-        Neon.put_text("test", 0, 16)
+        Neon.draw_text("test", 0, 16)
     </script>
 
     <script type="mpy">
